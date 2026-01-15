@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -26,30 +26,27 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import cz.ash.mobilniapplikace.ui.di.rememberPostsRepository
+import cz.ash.mobilniapplikace.ui.di.rememberCoinsRepository
 import cz.ash.mobilniapplikace.ui.viewmodel.FavoritesViewModel
 import cz.ash.mobilniapplikace.ui.viewmodel.FavoritesViewModelFactory
+import java.text.NumberFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun FavoritesScreen(
-    onOpenDetail: (Int) -> Unit,
-    onBack: () -> Unit
+fun DashboardScreen(
+    onOpenDetail: (String) -> Unit,
 ) {
-    val repository = rememberPostsRepository()
+    val repository = rememberCoinsRepository()
     val factory = remember(repository) { FavoritesViewModelFactory(repository) }
     val vm: FavoritesViewModel = viewModel(factory = factory)
     val state by vm.state.collectAsState()
+    val currency = remember { NumberFormat.getCurrencyInstance(Locale.US) }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Oblíbené") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Zpět")
-                    }
-                }
+                title = { Text("Dashboard") }
             )
         }
     ) { padding ->
@@ -73,13 +70,18 @@ fun FavoritesScreen(
                             modifier = Modifier.weight(1f)
                         ) {
                             Text(
-                                text = item.title,
+                                text = "${item.name} (${item.symbol.uppercase()})",
                                 style = MaterialTheme.typography.titleMedium,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
                             Text(
-                                text = item.body,
+                                text = buildString {
+                                    append("Cena: ")
+                                    append(item.priceUsd?.let { currency.format(it) } ?: "—")
+                                    append("   •   24h: ")
+                                    append(item.change24hPct?.let { String.format(Locale.US, "%.2f%%", it) } ?: "—")
+                                },
                                 style = MaterialTheme.typography.bodyMedium,
                                 maxLines = 2,
                                 overflow = TextOverflow.Ellipsis,

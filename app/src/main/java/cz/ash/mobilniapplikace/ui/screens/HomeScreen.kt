@@ -1,7 +1,6 @@
 package cz.ash.mobilniapplikace.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,18 +31,20 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cz.ash.mobilniapplikace.ui.components.ErrorView
 import cz.ash.mobilniapplikace.ui.components.LoadingView
-import cz.ash.mobilniapplikace.ui.di.rememberPostsRepository
+import cz.ash.mobilniapplikace.ui.di.rememberCoinsRepository
 import cz.ash.mobilniapplikace.ui.viewmodel.HomeUiItem
 import cz.ash.mobilniapplikace.ui.viewmodel.HomeViewModel
 import cz.ash.mobilniapplikace.ui.viewmodel.HomeViewModelFactory
+import java.text.NumberFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(
-    onOpenDetail: (Int) -> Unit,
+fun ExploreScreen(
+    onOpenDetail: (String) -> Unit,
     onOpenFavorites: () -> Unit
 ) {
-    val repository = rememberPostsRepository()
+    val repository = rememberCoinsRepository()
     val factory = remember(repository) { HomeViewModelFactory(repository) }
     val vm: HomeViewModel = viewModel(factory = factory)
     val state by vm.state.collectAsState()
@@ -52,7 +52,7 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Home") },
+                title = { Text("Explore") },
                 actions = {
                     IconButton(onClick = onOpenFavorites) {
                         Icon(Icons.Default.Favorite, contentDescription = "Oblíbené")
@@ -98,19 +98,25 @@ private fun PostCard(
     onToggleFavorite: () -> Unit,
     onOpen: () -> Unit
 ) {
+    val currency = remember { NumberFormat.getCurrencyInstance(Locale.US) }
     Card(
         onClick = onOpen,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             Text(
-                text = item.title,
+                text = "${item.name} (${item.symbol.uppercase()})",
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
             Text(
-                text = item.body,
+                text = buildString {
+                    append("Cena: ")
+                    append(item.priceUsd?.let { currency.format(it) } ?: "—")
+                    append("   •   24h: ")
+                    append(item.change24hPct?.let { String.format(Locale.US, "%.2f%%", it) } ?: "—")
+                },
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis,

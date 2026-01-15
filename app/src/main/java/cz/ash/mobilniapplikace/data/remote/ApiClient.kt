@@ -8,7 +8,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 
 object ApiClient {
-    private const val BASE_URL = "https://jsonplaceholder.typicode.com/"
+    private const val BASE_URL = "https://api.coingecko.com/"
 
     private val moshi: Moshi = Moshi.Builder()
         .add(KotlinJsonAdapterFactory())
@@ -28,6 +28,6 @@ object ApiClient {
         .addConverterFactory(MoshiConverterFactory.create(moshi))
         .build()
 
-    val api: JsonPlaceholderApi = retrofit.create(JsonPlaceholderApi::class.java)
+    val api: CoinGeckoApi = retrofit.create(CoinGeckoApi::class.java)
 }
 

@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -21,24 +21,28 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cz.ash.mobilniapplikace.ui.components.ErrorView
 import cz.ash.mobilniapplikace.ui.components.LoadingView
-import cz.ash.mobilniapplikace.ui.di.rememberPostsRepository
+import cz.ash.mobilniapplikace.ui.di.rememberCoinsRepository
 import cz.ash.mobilniapplikace.ui.viewmodel.DetailViewModel
 import cz.ash.mobilniapplikace.ui.viewmodel.DetailViewModelFactory
+import java.text.NumberFormat
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
-    postId: Int,
+    coinId: String,
     onBack: () -> Unit
 ) {
-    val repository = rememberPostsRepository()
-    val factory = remember(repository, postId) { DetailViewModelFactory(postId, repository) }
+    val repository = rememberCoinsRepository()
+    val factory = remember(repository, coinId) { DetailViewModelFactory(coinId, repository) }
     val vm: DetailViewModel = viewModel(factory = factory)
     val state by vm.state.collectAsState()
+    val currency = remember { NumberFormat.getCurrencyInstance(Locale.US) }
 
     Scaffold(
         topBar = {
@@ -46,13 +50,13 @@ fun DetailScreen(
                 title = { Text("Detail") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Zpět")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Zpět")
                     }
                 },
                 actions = {
                     IconButton(
                         onClick = { vm.toggleFavorite() },
-                        enabled = state.post != null
+                        enabled = state.coin != null
                     ) {
                         if (state.isFavorite) {
                             Icon(Icons.Default.Favorite, contentDescription = "Odebrat z oblíbených")
@@ -69,11 +73,12 @@ fun DetailScreen(
             state.errorMessage != null -> ErrorView(
                 padding = padding,
                 message = state.errorMessage ?: "Chyba",
-                onRetry = { onBack() }
+                onRetry = { vm.load() }
             )
-            state.post == null -> LoadingView(padding)
+            state.coin == null -> LoadingView(padding)
             else -> {
-                val post = state.post
+                val coin = state.coin
+                val change = coin?.change24hPct
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -81,13 +86,37 @@ fun DetailScreen(
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = post?.title.orEmpty(),
+                        text = "${coin?.name.orEmpty()} (${coin?.symbol?.uppercase().orEmpty()})",
                         style = MaterialTheme.typography.headlineSmall
                     )
                     Text(
-                        text = post?.body.orEmpty(),
+                        text = buildString {
+                            append("Cena: ")
+                            append(coin?.priceUsd?.let { currency.format(it) } ?: "—")
+                        },
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.padding(top = 12.dp)
+                    )
+                    Text(
+                        text = buildString {
+                            append("Změna 24h: ")
+                            append(change?.let { String.format(Locale.US, "%.2f%%", it) } ?: "—")
+                        },
+                        color = when {
+                            change == null -> MaterialTheme.colorScheme.onSurface
+                            change >= 0 -> Color(0xFF2E7D32)
+                            else -> Color(0xFFC62828)
+                        },
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(top = 10.dp)
+                    )
+                    Text(
+                        text = buildString {
+                            append("Market cap: ")
+                            append(coin?.marketCapUsd?.let { currency.format(it) } ?: "—")
+                        },
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(top = 10.dp)
                     )
                     Text(
                         text = if (state.isFavorite) "Uloženo v oblíbených" else "Není v oblíbených",

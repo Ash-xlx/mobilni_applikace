@@ -1,4 +1,4 @@
-# Mobilní aplikace – závěrečný projekt (Kotlin, MVVM)
+# Krypto ceny – závěrečný projekt (Kotlin, MVVM)
 
 Tento repozitář obsahuje Android aplikaci psanou v Kotlinu s architekturou **MVVM**, s UI v **Jetpack Compose**, s **navigací mezi obrazovkami**, **síťovou komunikací** (REST) a **perzistencí** (Room).
 
@@ -21,7 +21,7 @@ Výsledné APK najdeš v:
 
 ## Co aplikace dělá
 
-- Načte seznam příspěvků z veřejného REST API (`jsonplaceholder.typicode.com`)
+- Načte seznam kryptoměn z veřejného REST API (CoinGecko)
 - Zobrazí seznam (Home), detail a obrazovku oblíbených (Favorites)
-- Umožní přidat/odebrat oblíbené položky a ukládá je do databáze (Room)
+- Umožní přidat/odebrat oblíbené coiny a ukládá je do databáze (Room)
 

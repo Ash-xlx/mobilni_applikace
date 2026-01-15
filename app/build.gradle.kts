@@ -1,8 +1,12 @@
-plugins {
+﻿plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
+
+val supabaseUrl: String = (project.findProperty("SUPABASE_URL") as String?) ?: ""
+val supabaseAnonKey: String = (project.findProperty("SUPABASE_ANON_KEY") as String?) ?: ""
 
 android {
     namespace = "cz.ash.mobilniapplikace"
@@ -19,6 +23,9 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+
+        buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
+        buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
     }
 
     buildTypes {
@@ -41,6 +48,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.14"
@@ -91,6 +99,13 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
 
+    // Supabase (Auth + PostgREST)
+    implementation("io.github.jan-tennert.supabase:supabase-kt:2.5.4")
+    implementation("io.github.jan-tennert.supabase:gotrue-kt:2.5.4")
+    implementation("io.github.jan-tennert.supabase:postgrest-kt:2.5.4")
+    implementation("io.ktor:ktor-client-okhttp:2.3.12")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
     // Debug / tests
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
@@ -100,4 +115,3 @@ dependencies {
     androidTestImplementation(platform("androidx.compose:compose-bom:2024.06.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 }
-

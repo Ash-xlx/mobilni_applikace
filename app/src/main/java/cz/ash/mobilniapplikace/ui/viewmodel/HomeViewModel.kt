@@ -3,7 +3,8 @@ package cz.ash.mobilniapplikace.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import cz.ash.mobilniapplikace.data.PostsRepository
+import cz.ash.mobilniapplikace.data.CoinsRepository
+import cz.ash.mobilniapplikace.domain.Coin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,9 +13,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 data class HomeUiItem(
-    val id: Int,
-    val title: String,
-    val body: String,
+    val id: String,
+    val name: String,
+    val symbol: String,
+    val priceUsd: Double?,
+    val change24hPct: Double?,
     val isFavorite: Boolean
 )
 
@@ -25,17 +28,17 @@ data class HomeUiState(
 )
 
 class HomeViewModel(
-    private val repository: PostsRepository
+    private val repository: CoinsRepository
 ) : ViewModel() {
 
-    private val posts = MutableStateFlow<List<HomeUiItem>>(emptyList())
+    private val coins = MutableStateFlow<List<HomeUiItem>>(emptyList())
     private val _state = MutableStateFlow(HomeUiState(isLoading = true))
     val state: StateFlow<HomeUiState> = _state.asStateFlow()
 
     init {
-        // Combine network posts with favorites from DB
+        // Combine network coins with favorites from DB
         viewModelScope.launch {
-            combine(posts, repository.observeFavoriteIds()) { items, favoriteIds ->
+            combine(coins, repository.observeFavoriteIds()) { items, favoriteIds ->
                 items.map { it.copy(isFavorite = favoriteIds.contains(it.id)) }
             }.collect { combined ->
                 _state.update { it.copy(items = combined) }
@@ -49,15 +52,24 @@ class HomeViewModel(
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, errorMessage = null) }
             try {
-                val loaded = repository.fetchPosts()
-                    .map { p -> HomeUiItem(p.id, p.title, p.body, isFavorite = false) }
-                posts.value = loaded
+                val loaded = repository.fetchTopCoins()
+                    .map { c ->
+                        HomeUiItem(
+                            id = c.id,
+                            name = c.name,
+                            symbol = c.symbol,
+                            priceUsd = c.priceUsd,
+                            change24hPct = c.change24hPct,
+                            isFavorite = false
+                        )
+                    }
+                coins.value = loaded
                 _state.update { it.copy(isLoading = false) }
             } catch (t: Throwable) {
                 _state.update {
                     it.copy(
                         isLoading = false,
-                        errorMessage = t.message ?: "Chyba při načítání dat"
+                        errorMessage = t.message ?: "Chyba při načítání cen"
                     )
                 }
             }
@@ -67,7 +79,14 @@ class HomeViewModel(
     fun toggleFavorite(item: HomeUiItem) {
         viewModelScope.launch {
             repository.setFavorite(
-                post = cz.ash.mobilniapplikace.domain.Post(item.id, item.title, item.body),
+                coin = Coin(
+                    id = item.id,
+                    symbol = item.symbol,
+                    name = item.name,
+                    priceUsd = item.priceUsd,
+                    change24hPct = item.change24hPct,
+                    marketCapUsd = null
+                ),
                 favorite = !item.isFavorite
             )
         }
@@ -75,7 +94,7 @@ class HomeViewModel(
 }
 
 class HomeViewModelFactory(
-    private val repository: PostsRepository
+    private val repository: CoinsRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {

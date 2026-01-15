@@ -6,8 +6,8 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 
 @Database(
-    entities = [FavoritePostEntity::class],
-    version = 1,
+    entities = [FavoriteCoinEntity::class],
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -22,7 +22,11 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "app.db"
-                ).build().also { INSTANCE = it }
+                )
+                    // Jednoduché řešení pro vývoj: při změně schématu DB se DB smaže a vytvoří znovu.
+                    .fallbackToDestructiveMigration()
+                    .build()
+                    .also { INSTANCE = it }
             }
     }
 }

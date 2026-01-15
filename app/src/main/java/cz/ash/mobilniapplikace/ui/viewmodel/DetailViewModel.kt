@@ -3,8 +3,8 @@ package cz.ash.mobilniapplikace.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import cz.ash.mobilniapplikace.data.PostsRepository
-import cz.ash.mobilniapplikace.domain.Post
+import cz.ash.mobilniapplikace.data.CoinsRepository
+import cz.ash.mobilniapplikace.domain.Coin
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -14,13 +14,13 @@ import kotlinx.coroutines.launch
 data class DetailUiState(
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
-    val post: Post? = null,
+    val coin: Coin? = null,
     val isFavorite: Boolean = false
 )
 
 class DetailViewModel(
-    private val postId: Int,
-    private val repository: PostsRepository
+    private val coinId: String,
+    private val repository: CoinsRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(DetailUiState(isLoading = true))
@@ -28,19 +28,23 @@ class DetailViewModel(
 
     init {
         viewModelScope.launch {
-            repository.observeIsFavorite(postId).collect { fav ->
+            repository.observeIsFavorite(coinId).collect { fav ->
                 _state.update { it.copy(isFavorite = fav) }
             }
         }
         load()
     }
 
-    private fun load() {
+    fun load() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, errorMessage = null) }
             try {
-                val post = repository.fetchPost(postId)
-                _state.update { it.copy(isLoading = false, post = post) }
+                val coin = repository.fetchCoin(coinId)
+                if (coin == null) {
+                    _state.update { it.copy(isLoading = false, errorMessage = "Mince nenalezena") }
+                } else {
+                    _state.update { it.copy(isLoading = false, coin = coin) }
+                }
             } catch (t: Throwable) {
                 _state.update {
                     it.copy(
@@ -53,21 +57,21 @@ class DetailViewModel(
     }
 
     fun toggleFavorite() {
-        val post = _state.value.post ?: return
+        val coin = _state.value.coin ?: return
         viewModelScope.launch {
-            repository.setFavorite(post, favorite = !_state.value.isFavorite)
+            repository.setFavorite(coin, favorite = !_state.value.isFavorite)
         }
     }
 }
 
 class DetailViewModelFactory(
-    private val postId: Int,
-    private val repository: PostsRepository
+    private val coinId: String,
+    private val repository: CoinsRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(DetailViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return DetailViewModel(postId, repository) as T
+            return DetailViewModel(coinId, repository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel: $modelClass")
     }
