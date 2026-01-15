@@ -16,6 +16,7 @@ data class HomeUiItem(
     val id: String,
     val name: String,
     val symbol: String,
+    val imageUrl: String?,
     val priceUsd: Double?,
     val change24hPct: Double?,
     val isFavorite: Boolean
@@ -58,6 +59,7 @@ class HomeViewModel(
                             id = c.id,
                             name = c.name,
                             symbol = c.symbol,
+                            imageUrl = c.imageUrl,
                             priceUsd = c.priceUsd,
                             change24hPct = c.change24hPct,
                             isFavorite = false
@@ -83,6 +85,7 @@ class HomeViewModel(
                     id = item.id,
                     symbol = item.symbol,
                     name = item.name,
+                    imageUrl = item.imageUrl,
                     priceUsd = item.priceUsd,
                     change24hPct = item.change24hPct,
                     marketCapUsd = null

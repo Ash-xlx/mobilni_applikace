@@ -10,10 +10,15 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColors = darkColorScheme(
-    primary = Color(0xFF00E5FF),
-    secondary = Color(0xFF7C4DFF),
-    background = Color(0xFF0B1020),
-    surface = Color(0xFF111935),
+    primary = Color(0xFF0052FF), // Coinbase blue-ish
+    secondary = Color(0xFF7C3AED),
+    background = Color(0xFF0B0F1A),
+    surface = Color(0xFF0F172A),
+    surfaceVariant = Color(0xFF111827),
+    onBackground = Color(0xFFE5E7EB),
+    onSurface = Color(0xFFE5E7EB),
+    onSurfaceVariant = Color(0xFF9CA3AF),
+    outline = Color(0xFF2A3447),
 )
 
 private val LightColors = lightColorScheme(

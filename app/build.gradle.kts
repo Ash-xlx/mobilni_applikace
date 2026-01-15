@@ -1,12 +1,9 @@
-﻿plugins {
+plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
     id("org.jetbrains.kotlin.plugin.serialization")
 }
-
-val supabaseUrl: String = (project.findProperty("SUPABASE_URL") as String?) ?: ""
-val supabaseAnonKey: String = (project.findProperty("SUPABASE_ANON_KEY") as String?) ?: ""
 
 android {
     namespace = "cz.ash.mobilniapplikace"
@@ -23,9 +20,6 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
-
-        buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
-        buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
     }
 
     buildTypes {
@@ -59,6 +53,9 @@ android {
         }
     }
 }
+
+val supabaseUrl: String = (project.findProperty("SUPABASE_URL") as String?) ?: ""
+val supabaseAnonKey: String = (project.findProperty("SUPABASE_ANON_KEY") as String?) ?: ""
 
 dependencies {
     // Core / lifecycle
@@ -100,11 +97,15 @@ dependencies {
     ksp("androidx.room:room-compiler:2.6.1")
 
     // Supabase (Auth + PostgREST)
-    implementation("io.github.jan-tennert.supabase:supabase-kt:2.5.4")
-    implementation("io.github.jan-tennert.supabase:gotrue-kt:2.5.4")
-    implementation("io.github.jan-tennert.supabase:postgrest-kt:2.5.4")
+    implementation(platform("io.github.jan-tennert.supabase:bom:2.5.4"))
+    implementation("io.github.jan-tennert.supabase:supabase-kt")
+    implementation("io.github.jan-tennert.supabase:gotrue-kt")
+    implementation("io.github.jan-tennert.supabase:postgrest-kt")
     implementation("io.ktor:ktor-client-okhttp:2.3.12")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
+    // Images (Compose)
+    implementation("io.coil-kt:coil-compose:2.6.0")
 
     // Debug / tests
     debugImplementation("androidx.compose.ui:ui-tooling")
@@ -114,4 +115,9 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2024.06.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+}
+
+android.defaultConfig.apply {
+    buildConfigField("String", "SUPABASE_URL", "\"$supabaseUrl\"")
+    buildConfigField("String", "SUPABASE_ANON_KEY", "\"$supabaseAnonKey\"")
 }

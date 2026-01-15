@@ -8,6 +8,7 @@ data class FavoriteCoinEntity(
     @PrimaryKey val id: String,
     val symbol: String,
     val name: String,
+    val imageUrl: String?,
     val lastPriceUsd: Double?,
     val lastChange24hPct: Double?,
     val lastMarketCapUsd: Double?

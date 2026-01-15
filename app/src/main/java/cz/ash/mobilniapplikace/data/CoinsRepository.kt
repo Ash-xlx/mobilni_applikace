@@ -21,6 +21,7 @@ class CoinsRepository(
                     id = it.id,
                     symbol = it.symbol,
                     name = it.name,
+                    imageUrl = it.imageUrl,
                     priceUsd = it.lastPriceUsd,
                     change24hPct = it.lastChange24hPct,
                     marketCapUsd = it.lastMarketCapUsd
@@ -36,6 +37,7 @@ class CoinsRepository(
                 id = dto.id,
                 symbol = dto.symbol,
                 name = dto.name,
+                imageUrl = dto.image,
                 priceUsd = dto.currentPrice,
                 change24hPct = dto.priceChangePercentage24h,
                 marketCapUsd = dto.marketCap
@@ -49,6 +51,7 @@ class CoinsRepository(
             id = dto.id,
             symbol = dto.symbol,
             name = dto.name,
+            imageUrl = dto.image,
             priceUsd = dto.currentPrice,
             change24hPct = dto.priceChangePercentage24h,
             marketCapUsd = dto.marketCap
@@ -62,6 +65,7 @@ class CoinsRepository(
                     id = coin.id,
                     symbol = coin.symbol,
                     name = coin.name,
+                    imageUrl = coin.imageUrl,
                     lastPriceUsd = coin.priceUsd,
                     lastChange24hPct = coin.change24hPct,
                     lastMarketCapUsd = coin.marketCapUsd
